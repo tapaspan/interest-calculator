@@ -1,0 +1,45 @@
+name: Android CI - Build APK
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # allows manual run
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout source code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up JDK for Android build
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Step 3: Set up Gradle caching
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+
+      # Step 4: Grant execute permission for gradlew
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # Step 5: Build APK (debug build for testing)
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      # Step 6: Upload the APK as a GitHub Actions artifact
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
